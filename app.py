@@ -165,4 +165,6 @@ async def predict_api(request: Request):
     return {"cluster": int(model.predict(features)[0])}
 
 
-# uvicorn app:app --reload 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=7860)

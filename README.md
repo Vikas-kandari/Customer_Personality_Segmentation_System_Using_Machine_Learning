@@ -26,6 +26,8 @@ We use clustering and classification models to dynamically assign customers to s
 6. Model Evaluation
 7. Deployment with FastAPI
 
+## Model Performance
+Accuracy : 96%
 ## How to Run
 
 ### Clone the repository
