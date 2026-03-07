@@ -1,0 +1,2 @@
+# Customer_Personality_Segmentation_System_Using_Machine_Learning
+Machine Learning system to segment customers using KMeans clustering and XGBoostclassifier classification.
