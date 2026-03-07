@@ -26,6 +26,13 @@ We use clustering and classification models to dynamically assign customers to s
 6. Model Evaluation
 7. Deployment with FastAPI
 
+## 🌐 Deployment
+The application is deployed on Hugging Face Spaces using Docker.
+Platform: Hugging Face Spaces  
+Framework: FastAPI  
+Frontend: Jinja2 Template  
+Containerization: Docker
+
 ## Model Performance
 Accuracy : 96%
 ## How to Run
@@ -35,3 +42,7 @@ Accuracy : 96%
 2.cd project
 pip install -r requirements.txt
 3.Run this in terminal uvicorn app:app --reload 
+
+## 🚀 Live Demo
+Try the deployed application here:
+https://vikaskandari1502-customer-personality-segmentation-system.hf.space
