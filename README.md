@@ -1,5 +1,5 @@
 # Customer Personality Segmentation
-
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://huggingface.co/spaces/VikasKandari1502/Customer-personality-segmentation-system)
 ## Problem Statement
 This project predicts customer personality segments using machine learning techniques. 
 Businesses can use this system to categorize customers and target marketing campaigns effectively.
@@ -45,4 +45,4 @@ pip install -r requirements.txt
 
 ## 🚀 Live Demo
 Try the deployed application here:
-https://vikaskandari1502-customer-personality-segmentation-system.hf.space
+https://huggingface.co/spaces/VikasKandari1502/Customer-personality-segmentation-system
