@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Segmentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0d14;
+      --surface: #111520;
+      --surface2: #161b2e;
+      --border: #1e2640;
+      --accent: #4f7cff;
+      --accent2: #a259ff;
+      --accent3: #00e5c0;
+      --text: #e8ecf8;
+      --muted: #6b7599;
+      --danger: #ff4f7c;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 0%, rgba(79,124,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(162,89,255,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0,229,192,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      margin-bottom: 52px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .header-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(79,124,255,0.12);
+      border: 1px solid rgba(79,124,255,0.25);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .header-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #e8ecf8 30%, var(--accent) 70%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    /* ── Progress Bar ── */
+    .progress-bar {
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 48px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Section Label ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 40px 0 20px;
+    }
+    .section-label::before { content: ''; flex: 0 0 20px; height: 1px; background: var(--border); }
+    .section-label::after  { content: ''; flex: 1;       height: 1px; background: var(--border); }
+
+    /* ── Form Grid ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .field-wrap { position: relative; }
+
+    .field-wrap .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 15px;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 13px 14px 13px 40px;
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input::placeholder { color: #3a4060; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7599' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      background: var(--surface2);
+      box-shadow: 0 0 0 3px rgba(79,124,255,0.12);
+    }
+
+    .field-wrap:focus-within .icon { color: var(--accent); }
+
+    /* ── Toggle Group ── */
+    .toggle-group { display: flex; gap: 8px; }
+    .toggle-option { flex: 1; position: relative; }
+    .toggle-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .toggle-option label {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 13px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13px; font-weight: 500;
+      color: var(--muted);
+      text-transform: none; letter-spacing: 0; margin-bottom: 0;
+      transition: all 0.2s; user-select: none;
+    }
+    .toggle-option label:hover { border-color: rgba(79,124,255,0.4); color: var(--text); }
+    .toggle-option.yes input[type="radio"]:checked + label { background: rgba(0,229,192,0.08); border-color: var(--accent3); color: var(--accent3); }
+    .toggle-option.no  input[type="radio"]:checked + label { background: rgba(255,79,124,0.08); border-color: var(--danger); color: var(--danger); }
+
+    /* ── Submit Button ── */
+    .submit-wrap { margin-top: 48px; }
+
+    .btn-predict {
+      position: relative;
+      width: 100%;
+      padding: 18px 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: var(--radius);
+      color: #fff;
+      font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.04em;
+      cursor: pointer; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 32px rgba(79,124,255,0.25);
+    }
+    .btn-predict:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79,124,255,0.35); }
+    .btn-predict:active { transform: translateY(0); }
+    .btn-predict .btn-inner { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+    /* ── Result Section ── */
+    .result-section { margin-top: 56px; animation: fadeUp 0.6s ease both; }
+
+    .result-hero {
+      border-radius: 20px;
+      padding: 40px 36px 36px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      margin-bottom: 20px;
+    }
+
+    .result-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--cluster-color, var(--accent));
+    }
+
+    .result-hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .result-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--cluster-badge-bg);
+      border: 1px solid var(--cluster-badge-border);
+      color: var(--cluster-color);
+    }
+
+    .result-cluster-num {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(52px, 10vw, 80px);
+      font-weight: 800;
+      line-height: 1;
+      color: var(--cluster-color);
+      text-shadow: 0 0 40px color-mix(in srgb, var(--cluster-color) 30%, transparent);
+    }
+
+    .result-cluster-num span {
+      font-size: 0.35em;
+      font-weight: 600;
+      vertical-align: super;
+      opacity: 0.6;
+      letter-spacing: 0.05em;
+    }
+
+    .result-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .result-subtitle {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ── Info Cards Grid ── */
+    .result-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 680px) {
+      .result-cards { grid-template-columns: 1fr; }
+    }
+
+    .info-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .info-card-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: var(--cluster-badge-bg);
+    }
+
+    .info-card-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cluster-color);
+    }
+
+    .info-card ul { list-style: none; padding: 0; margin: 0; }
+    .info-card ul li {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+    .info-card ul li:last-child { border-bottom: none; }
+    .info-card ul li::before {
+      content: '›';
+      color: var(--cluster-color);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 0px;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp   { from { opacity: 0; transform: translateY(16px);  } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse    { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-tag">ML Model</div>
+    <h1>Customer<br>Segmentation</h1>
+    <p class="subtitle">Enter customer details below to predict which cluster they belong to using our trained ML model.</p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Form -->
+  <form method="POST" action="/" id="segmentForm">
+
+    <!-- Demographics -->
+    <div class="section-label">Demographics</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Age</label>
+        <div class="field-wrap">
+          <span class="icon">👤</span>
+          <input type="number" name="Age" placeholder="e.g. 35" min="1" max="100" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Education</label>
+        <div class="field-wrap">
+          <span class="icon">🎓</span>
+          <select name="Education" required>
+            <option value="" disabled selected>Select level</option>
+            <option value="0">Basic</option>
+            <option value="1">2n Cycle</option>
+            <option value="2">Graduation</option>
+            <option value="3">Master</option>
+            <option value="4">PhD</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Family -->
+    <div class="section-label">Family Status</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Marital Status (Married)</label>
+        <div class="toggle-group">
+          <div class="toggle-option yes">
+            <input type="radio" name="Marital_Status" id="married_yes" value="1" />
+            <label for="married_yes">✓ Yes</label>
+          </div>
+          <div class="toggle-option no">
+            <input type="radio" name="Marital_Status" id="married_no" value="0" checked />
+            <label for="married_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Parental Status (Has Kids)</label>
+        <div class="toggle-group">
+          <div class="toggle-option yes">
+            <input type="radio" name="Parental_Status" id="kids_yes" value="1" />
+            <label for="kids_yes">✓ Yes</label>
+          </div>
+          <div class="toggle-option no">
+            <input type="radio" name="Parental_Status" id="kids_no" value="0" checked />
+            <label for="kids_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Number of Children</label>
+        <div class="field-wrap">
+          <span class="icon">👶</span>
+          <input type="number" name="Children" placeholder="0" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Customer Income</label>
+        <div class="field-wrap">
+          <span class="icon">💰</span>
+          <input type="number" name="Income" placeholder="e.g. 52000" min="1000" required />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Behaviour -->
+    <div class="section-label">Customer Behaviour</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Total Spending</label>
+        <div class="field-wrap">
+          <span class="icon">💳</span>
+          <input type="number" name="Total_Spending" placeholder="e.g. 1200" min="1000" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Days as Customer</label>
+        <div class="field-wrap">
+          <span class="icon">📅</span>
+          <input type="number" name="Days_as_Customer" placeholder="e.g. 730" min="1" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Days Since Last Purchase (Recency)</label>
+        <div class="field-wrap">
+          <span class="icon">🛒</span>
+          <input type="number" name="Recency" placeholder="e.g. 14" min="1" required />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Spending Categories -->
+    <div class="section-label">Spending by Category (Last 2 Years)</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Wines</label>
+        <div class="field-wrap">
+          <span class="icon">🍷</span>
+          <input type="number" name="Wines" placeholder="Amount" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Fruits</label>
+        <div class="field-wrap">
+          <span class="icon">🍎</span>
+          <input type="number" name="Fruits" placeholder="Amount" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Meat</label>
+        <div class="field-wrap">
+          <span class="icon">🥩</span>
+          <input type="number" name="Meat" placeholder="Amount" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Fish</label>
+        <div class="field-wrap">
+          <span class="icon">🐟</span>
+          <input type="number" name="Fish" placeholder="Amount" min="0" step="0.01" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Sweets</label>
+        <div class="field-wrap">
+          <span class="icon">🍬</span>
+          <input type="number" name="Sweets" placeholder="Amount" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Gold</label>
+        <div class="field-wrap">
+          <span class="icon">🥇</span>
+          <input type="number" name="Gold" placeholder="Amount" min="0" value="0" />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Purchase Channels -->
+    <div class="section-label">Purchase Channels</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Web Purchases</label>
+        <div class="field-wrap">
+          <span class="icon">🖥️</span>
+          <input type="number" name="Web" placeholder="Count" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Catalog Purchases</label>
+        <div class="field-wrap">
+          <span class="icon">📖</span>
+          <input type="number" name="Catalog" placeholder="Count" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Store Purchases</label>
+        <div class="field-wrap">
+          <span class="icon">🏪</span>
+          <input type="number" name="Store" placeholder="Count" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Discount Purchases</label>
+        <div class="field-wrap">
+          <span class="icon">🏷️</span>
+          <input type="number" name="Discount_Purchases" placeholder="Count" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Total Promotions Accepted</label>
+        <div class="field-wrap">
+          <span class="icon">📣</span>
+          <input type="number" name="TotalPromo" placeholder="Count" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Web Visits / Month</label>
+        <div class="field-wrap">
+          <span class="icon">🌐</span>
+          <input type="number" name="NumWebVisitsMonth" placeholder="e.g. 5" min="0" value="0" />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-wrap">
+      <button type="submit" class="btn-predict" id="submitBtn">
+        <span class="btn-inner">
+          <span>⚡</span>
+          <span>Predict Customer Cluster</span>
+        </span>
+      </button>
+    </div>
+
+  </form>
+
+  <!--RESULT SECTION — shown only after prediction -->
+  {% if result %}
+  <div class="result-section" id="resultSection"
+       style="
+         --cluster-color: {{ result.color }};
+         --cluster-badge-bg: {{ result.badge_bg }};
+         --cluster-badge-border: {{ result.badge_border }};
+       ">
+
+    <!-- Hero card -->
+    <div class="result-hero">
+      <div class="result-hero-top">
+        <div>
+          <div class="result-badge">
+            {{ result.emoji }} &nbsp; Cluster {{ result.cluster_id }}
+          </div>
+        </div>
+        <div class="result-cluster-num">
+          <span>Cluster</span> {{ result.cluster_id }}
+        </div>
+      </div>
+
+      <div class="result-title">{{ result.title }}</div>
+      <div class="result-subtitle">
+        Based on the provided data, this customer has been classified into Cluster {{ result.cluster_id }}.
+      </div>
+    </div>
+
+    <!-- Three info cards -->
+    <div class="result-cards">
+
+      <div class="info-card">
+        <div class="info-card-header">
+          <div class="info-card-icon">🧠</div>
+          <div class="info-card-label">Customer Behavior</div>
+        </div>
+        <ul>
+          {% for item in result.behavior %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-header">
+          <div class="info-card-icon">📊</div>
+          <div class="info-card-label">Business Meaning</div>
+        </div>
+        <ul>
+          {% for item in result.business %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-header">
+          <div class="info-card-icon">🚀</div>
+          <div class="info-card-label">Recommended Strategy</div>
+        </div>
+        <ul>
+          {% for item in result.strategy %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  // Progress bar
+  const inputs = document.querySelectorAll('input[type="number"], select');
+  const progressFill = document.getElementById('progressFill');
+
+  function updateProgress() {
+    let filled = 0;
+    inputs.forEach(inp => {
+      if (inp.value && inp.value.trim() !== '') filled++;
+    });
+    const pct = Math.round((filled / inputs.length) * 100);
+    progressFill.style.width = pct + '%';
+  }
+
+  document.querySelectorAll('input, select').forEach(inp => inp.addEventListener('input', updateProgress));
+  updateProgress();
+
+  // Loading state on submit
+  document.getElementById('segmentForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.innerHTML = '<span class="btn-inner"><span>⏳</span><span>Analysing...</span></span>';
+    btn.style.opacity = '0.8';
+    btn.disabled = true;
+  });
+
+  // Auto-scroll to result after prediction
+  {% if result %}
+  window.addEventListener('load', function() {
+    const resultEl = document.getElementById('resultSection');
+    if (resultEl) {
+      setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
+  });
+  {% endif %}
+</script>
+</body>
+</html>
