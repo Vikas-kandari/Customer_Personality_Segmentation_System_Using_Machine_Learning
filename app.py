@@ -165,4 +165,4 @@ async def predict_api(request: Request):
     return {"cluster": int(model.predict(features)[0])}
 
 
-# uvicorn app:app --reload  to see ui
+# uvicorn app:app --reload 

@@ -29,3 +29,7 @@ We use clustering and classification models to dynamically assign customers to s
 ## How to Run
 
 ### Clone the repository
+1. use the link "gh repo clone Vikas-kandari/Customer_Personality_Segmentation_System_Using_Machine_Learning"
+2.cd project
+pip install -r requirements.txt
+3.Run this in terminal uvicorn app:app --reload 
